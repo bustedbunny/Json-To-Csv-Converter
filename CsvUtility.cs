@@ -9,33 +9,40 @@ namespace ConsoleApp1
 {
     internal class CsvUtility
     {
-        public static bool WriteToCsv(string path, JsonObjects data, string separator, Encoding encoding)
+        public static bool WriteToCsv(string outputPath, string inputPath, string separator, Encoding encoding)
         {
             StringBuilder sbOutput = new();
-            if (data == null || data.List == null || data.List[0] == null)
+
+            var data = JsonUtility.ReadJson(inputPath);
+            if (data == null)
+            {
+                Console.WriteLine("Json file is not valid.");
+                return false;
+            }
+            if (data == null || data[0] == null)
             {
                 Console.WriteLine("Data or data list is null.");
                 return false;
             }
-            Type objType = data.List[0].GetType();
-            PropertyInfo[] fields = objType.GetProperties();
-            string[] fieldNames = new string[fields.Length];
-            for (int i = 0; i < fields.Length; i++)
+
+            for (int i = 0; i < data.Count; i++)
             {
-                fieldNames[i] = fields[i].Name;
-            }
-            sbOutput.AppendLine(string.Join(separator, fieldNames));
-            for (int i = 0; i < data.List.Length; i++)
-            {
-                string?[] newLine = new string[fieldNames.Length];
-                for (int j = 0; j < fields.Length; j++)
+                if (i == 0)
                 {
-                    newLine[j] = objType.GetProperty(fieldNames[j])?.GetValue(data.List[i])?.ToString();
+                    sbOutput.AppendLine(string.Join(separator, data[i].Keys));
                 }
-                sbOutput.AppendLine(string.Join(separator, newLine));
+                sbOutput.AppendLine(string.Join(separator, data[i].Values));
             }
-            File.WriteAllText(path, sbOutput.ToString(), encoding);
-            return true;
+            try
+            {
+                File.WriteAllText(outputPath, sbOutput.ToString(), encoding);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Failed to write to file: " + ex.Message);
+                return false;
+            }
         }
     }
 }

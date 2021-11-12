@@ -10,7 +10,6 @@ namespace ConsoleApp1
     {
         public string inputPath = "";
         public string outputPath = "";
-        public JsonObjects data = new();
         public string separator = ",";
         public Encoding encoding = Encoding.UTF8;
     }

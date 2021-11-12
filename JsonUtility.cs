@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -10,27 +11,19 @@ namespace ConsoleApp1
 {
     internal static class JsonUtility
     {
-        public static JsonObjects ReadJson(string path)
+        public static List<Dictionary<string, string>> ReadJson(string path)
         {
-            StreamReader jsonFileReader;
+            string jsonText;
             try
             {
-                jsonFileReader = File.OpenText(path);
+                jsonText = File.ReadAllText(path);
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Couldn't read json file: " + ex.Message);
                 return null;
             }
-            JsonObjects output = new()
-            {
-                List = JsonSerializer.Deserialize<JsonObject[]>(jsonFileReader.ReadToEnd(),
-                                new JsonSerializerOptions
-                                {
-                                    PropertyNameCaseInsensitive = true
-                                })
-            };
-            return output;
+            return JsonConvert.DeserializeObject<List<Dictionary<string, string>>>(jsonText);
         }
     }
 }

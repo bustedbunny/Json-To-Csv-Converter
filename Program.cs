@@ -8,16 +8,27 @@ namespace ConsoleApp1
 {
     public class Program
     {
-        public static void Main()
+        public static void Main(string[] args)
         {
-            Console.WriteLine("Expecting input.");
-            string? args = Console.ReadLine();
-            if (args == null || args.Length < 1)
+            string[]? newArgs;
+            if (args.Length > 0)
+            {
+                newArgs = args;
+            }
+            else
+            {
+                Console.WriteLine("Expecting input.");
+                newArgs = Console.ReadLine()?.Split(" ");
+            }
+
+            if (newArgs == null || newArgs.Length < 1)
             {
                 Console.WriteLine("Invalid args");
+                Console.WriteLine("Press any key to close this window . . .");
+                Console.ReadKey();
                 return;
             }
-            ConversionSettings settings = Program.GetSettings(args, out bool quickExit);
+            ConversionSettings settings = GetSettings(newArgs, out bool quickExit);
             if (settings != null)
             {
                 if (settings.outputPath == "")
@@ -27,7 +38,7 @@ namespace ConsoleApp1
                     settings.outputPath += ".csv";
                 }
 
-                if (CsvUtility.WriteToCsv(settings.outputPath, settings.data, settings.separator, settings.encoding))
+                if (CsvUtility.WriteToCsv(settings.outputPath, settings.inputPath, settings.separator, settings.encoding))
                 {
                     Console.WriteLine($"Conversion is done. Output file: {settings.outputPath}");
                 }
@@ -39,17 +50,11 @@ namespace ConsoleApp1
             }
         }
 
-        private static ConversionSettings GetSettings(string? args, out bool quickExit)
+        private static ConversionSettings GetSettings(string[] commands, out bool quickExit)
         {
             quickExit = false;
-            if (args == null)
-            {
-                Console.WriteLine("Input is null");
-                return null;
-            }
-            List<string> commands = args.Split(" ").ToList();
             ConversionSettings settings = new();
-            for (int i = 0; i < commands.Count; i++)
+            for (int i = 0; i < commands.Length; i++)
             {
                 switch (commands[i])
                 {
@@ -57,22 +62,16 @@ namespace ConsoleApp1
                         quickExit = true;
                         break;
                     case "-i":
-                        if (i + 1 >= commands.Count)
+                        if (i + 1 >= commands.Length)
                         {
                             Console.WriteLine("No input path is declared, but not defined.");
                             return null;
                         }
                         settings.inputPath = Path.GetFullPath(commands[i + 1]);
-                        settings.data = JsonUtility.ReadJson(settings.inputPath);
-                        if (settings.data == null || settings.data.List == null)
-                        {
-                            Console.WriteLine("Json file is not valid.");
-                            return null;
-                        }
                         i++;
                         break;
                     case "-o":
-                        if (i + 1 >= commands.Count)
+                        if (i + 1 >= commands.Length)
                         {
                             Console.WriteLine("Output path is declared, but not defined.");
                             return null;
@@ -81,7 +80,7 @@ namespace ConsoleApp1
                         i++;
                         break;
                     case "-s":
-                        if (i + 1 >= commands.Count)
+                        if (i + 1 >= commands.Length)
                         {
                             Console.WriteLine("Separator is declared, but not defined.");
                             return null;
@@ -91,7 +90,7 @@ namespace ConsoleApp1
                         break;
 
                     case "-e":
-                        if (i + 1 >= commands.Count)
+                        if (i + 1 >= commands.Length)
                         {
                             Console.WriteLine("Encoding is declared, but not defined.");
                             return null;
